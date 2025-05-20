@@ -1,6 +1,4 @@
 import Image from "next/image";
-import MongoClient from '@/lib/mongo'
-import PostgresClient from '../lib/postgres'
 
 export default function Home() {
   return (

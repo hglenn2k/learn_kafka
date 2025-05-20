@@ -1,4 +1,3 @@
-// clients/postgres.ts
 import { Client } from 'pg';
 
 const client = new Client({
@@ -8,5 +7,7 @@ const client = new Client({
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB_INTEGRATIONS, // or any other DB
 });
+
+await client.connect();
 
 export default client;

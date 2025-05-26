@@ -1,0 +1,35 @@
+services:
+  # Zookeeper - control kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    env_file: ".env"
+
+  # Kafka - data pipeline with validation
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    env_file: ".env"
+    depends_on:
+      - zookeeper
+
+  # Postgres - transaction logs, app traces
+  postgres:
+    image: postgres:latest
+    env_file: ".env"
+
+  # Mongo - account/user data
+  mongo:
+    image: mongo:latest
+    env_file: ".env"
+
+  # Next.js - application
+  node:
+    build:
+      context: ../bank-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file: .env
+    depends_on:
+      - kafka
+      - postgres
+      - mongo

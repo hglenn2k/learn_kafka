@@ -1,43 +1,55 @@
+"use client";
+
 import Image from "next/image";
-import { useRef } from "react";
+import { useState } from "react";
 
 export default function Home() {
-    const fromAccountRef = useRef<HTMLInputElement>(null);
-    const toAccountRef = useRef<HTMLInputElement>(null);
-    const amountRef = useRef<HTMLInputElement>(null);
+    const [fromAccount, setFromAccount] = useState("");
+    const [toAccount, setToAccount] = useState("");
+    const [amount, setAmount] = useState("");
+
+    const handleSubmit = () => {
+        console.log(`from: ${fromAccount}`);
+        console.log(`to: ${toAccount}`);
+        console.log(`amount: ${amount}`);
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-md w-full md:max-w-lg lg:max-w-xl flex flex-col gap-8">
-                {/* Title and Subtitle */}
-                <h1 className="text-3xl font-bold text-center">"honor system" bank</h1>
+                {/* title */}
+                <h1 className="text-3xl font-bold text-center pb-1">"honor system" bank</h1>
+
+                {/* subtitle */}
                 <p className="text-sm text-center">
-                    gitflow, docker, typescript, next.js (react), express.js, mongodb, postgres, kafka, aws
+                    gitflow, ci/cd, docker, typescript, next.js (react), express.js, mongodb, postgres, kafka, aws
                 </p>
 
-                {/* Transaction Form and Log Stream */}
+                {/* transaction form and log stream */}
                 <div className="flex flex-col md:flex-row gap-8">
-                    {/* Form Section */}
+                    {/* form */}
                     <div className="w-full md:w-1/2 flex flex-col gap-4">
                         <div>
-                            <label htmlFor="fromAccount" className="block text-sm mb-1">from:</label>
+                            <label htmlFor="fromAccount" className="block text-sm mb-1">from</label>
                             <input
                                 id="fromAccount"
                                 type="text"
-                                placeholder="..."
+                                placeholder=""
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
-                                ref={fromAccountRef}
+                                value={fromAccount}
+                                onChange={(e) => setFromAccount(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="toAccount" className="block text-sm mb-1">to:</label>
+                            <label htmlFor="toAccount" className="block text-sm mb-1">to</label>
                             <input
                                 id="toAccount"
                                 type="text"
-                                placeholder="..."
+                                placeholder=""
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
-                                ref={toAccountRef}
+                                value={toAccount}
+                                onChange={(e) => setToAccount(e.target.value)}
                             />
                         </div>
 
@@ -46,35 +58,34 @@ export default function Home() {
                             <input
                                 id="amount"
                                 type="number"
-                                placeholder="..."
+                                placeholder=""
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
-                                ref={amountRef}
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
                             />
                         </div>
-
-                        {/* Submit Button */}
-                        <button
-                            onClick={() => {
-                                const from = fromAccountRef.current?.value || "";
-                                const to = toAccountRef.current?.value || "";
-                                const amount = amountRef.current?.value || "";
-                                console.log({ from, to, amount });
-                            }}
-                            className="mt-4 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Submit
-                        </button>
                     </div>
 
-                    {/* Log Stream Section */}
-                    <div className="w-full md:w-1/2">
+                    {/* log stream text Area */}
+                    <div className="w-full md:w-1/2 flex flex-col">
                         <label htmlFor="logstream" className="block text-sm mb-1">integration log stream</label>
                         <textarea
                             id="logstream"
                             placeholder=""
-                            className="w-full p-2 border rounded font-mono text-sm h-full bg-gray-50 dark:bg-gray-800"
+                            className="w-full p-2 border rounded font-mono text-sm flex-1 bg-gray-50 dark:bg-gray-800"
                         />
                     </div>
+                </div>
+
+                {/* Centered button below inputs */}
+                <div className="flex justify-center mt-2">
+                    <button
+                        type="submit"
+                        className="p-2 border rounded font-mono text-xs bg-blue-900 hover:bg-blue-700 text-white"
+                        onClick={handleSubmit}
+                    >
+                        submit
+                    </button>
                 </div>
 
                 {/* Footer Link */}

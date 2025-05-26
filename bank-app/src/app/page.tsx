@@ -18,7 +18,7 @@ export default function Home() {
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-md w-full md:max-w-lg lg:max-w-xl flex flex-col gap-8">
                 {/* title */}
-                <h1 className="text-3xl font-bold text-center pb-1">"honor system" bank</h1>
+                <h1 className="text-3xl font-bold text-center pb-1">&quot;honor system&quot; bank</h1>
 
                 {/* subtitle */}
                 <p className="text-sm text-center">
@@ -66,7 +66,7 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* log stream text Area */}
+                    {/* log stream text area */}
                     <div className="w-full md:w-1/2 flex flex-col">
                         <label htmlFor="logstream" className="block text-sm mb-1">integration log stream</label>
                         <textarea
@@ -77,7 +77,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* Centered button below inputs */}
+                {/* submit button */}
                 <div className="flex justify-center mt-2">
                     <button
                         type="submit"
@@ -88,7 +88,7 @@ export default function Home() {
                     </button>
                 </div>
 
-                {/* Footer Link */}
+                {/* footer Link */}
                 <footer className="text-center mt-8">
                     <a
                         href="https://github.com/hglenn2k/learn_kafka"

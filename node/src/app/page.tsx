@@ -18,16 +18,14 @@ export default function Home() {
     const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
 
     // log state for displaying messages (populated by kafka)
-    const [logs, setLogs] = useState<string[]>([]);
+    const [integrationLogs, setIntegrationLogs] = useState<string[]>([]);
     const [fraudLogs, setFraudLogs] = useState<string[]>([]);
 
     const addIntegrationLog = (message: string) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+        setIntegrationLogs(prev => [...prev, `${message}`]);
     };
     const addTransactionLog = (message: string) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setFraudLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+        setFraudLogs(prev => [...prev, `${message}`]);
     };
 
     useEffect(() => {
@@ -240,7 +238,7 @@ export default function Home() {
                             id="logstream"
                             placeholder=""
                             readOnly
-                            value={logs.join('\n')}
+                            value={integrationLogs.join('\n')}
                             className="w-full p-2 border rounded font-mono text-sm h-48 bg-gray-50 dark:bg-gray-800"
                         />
                     </div>

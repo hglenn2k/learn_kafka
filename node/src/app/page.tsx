@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { bankApi } from "@/service/bankApiService";
 
 export default function Home() {
@@ -18,23 +18,40 @@ export default function Home() {
     const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
 
     // log state for displaying messages (populated by kafka)
-    const [logs/*, setLogs*/] = useState<string[]>([]);
-    const [fraudLogs/*, setFraudLogs*/] = useState<string[]>([]);
+    const [logs, setLogs] = useState<string[]>([]);
+    const [fraudLogs, setFraudLogs] = useState<string[]>([]);
 
-    // helper functions to add log messages (will be called by kafka integration)
-    /*
-    const addLog = (message: string) => {
+    const addIntegrationLog = (message: string) => {
         const timestamp = new Date().toLocaleTimeString();
         setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
     };
-    const addFraudLog = (message: string) => {
+    const addTransactionLog = (message: string) => {
         const timestamp = new Date().toLocaleTimeString();
         setFraudLogs(prev => [...prev, `[${timestamp}] ${message}`]);
     };
-    */
 
-    // TODO: Expose these functions to Kafka integration
-    // You can access them via useImperativeHandle, global window object, or context
+    useEffect(() => {
+        const integrationSource = new EventSource('/proxy/stream/integration');
+        integrationSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const timestamp = new Date(data.timestamp).toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${data.message}`;
+            addIntegrationLog(logEntry);
+        };
+
+        const transactionSource = new EventSource('/proxy/stream/fraud');
+        transactionSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const timestamp = new Date(data.timestamp).toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${data.message}`;
+            addTransactionLog(logEntry);
+        };
+
+        return () => {
+            integrationSource.close();
+            transactionSource.close();
+        };
+    }, []);
 
     const handleAccountSubmit = async () => {
         if (!name.trim() || !country.trim()) {
@@ -102,7 +119,7 @@ export default function Home() {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* account form */}
                     <div className="w-full lg:w-1/2 flex flex-col gap-4">
-                        <h2 className="text-lg font-semibold text-center">create account</h2>
+                        <h2 className="text-lg font-semibold text-center">create an account</h2>
 
                         <div>
                             <label htmlFor="name" className="block text-sm mb-1">name</label>
@@ -157,7 +174,7 @@ export default function Home() {
 
                     {/* transaction form */}
                     <div className="w-full lg:w-1/2 flex flex-col gap-4">
-                        <h2 className="text-lg font-semibold text-center">make transaction</h2>
+                        <h2 className="text-lg font-semibold text-center">make a transaction</h2>
 
                         <div>
                             <label htmlFor="fromAccountName" className="block text-sm mb-1">from (account name)</label>

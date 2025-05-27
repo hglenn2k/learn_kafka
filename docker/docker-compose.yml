@@ -1,17 +1,12 @@
 services:
-  # Zookeeper - control kafka
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    env_file: ".env"
-
-  # Kafka - data pipeline with validation
+  # Kafka - data event queue with validation
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: bitnami/kafka:latest
     env_file: ".env"
-    depends_on:
-      - zookeeper
+    ports:
+      - "9092:9092"
 
-  # Postgres - transaction logs, app traces
+  # Postgres - integration logs
   postgres:
     image: postgres:latest
     env_file: ".env"
@@ -33,11 +28,11 @@ services:
       - "8000:8000"
     env_file: .env
     depends_on:
-      #- kafka - put back when kafka set up
+      - kafka
       - postgres
       - mongo
 
-  # Next.js - frontend application
+  # Next.js - frontend & request proxy
   frontend:
     build:
       context: ../node

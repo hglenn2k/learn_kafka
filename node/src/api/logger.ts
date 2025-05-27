@@ -1,4 +1,5 @@
 import { connectPostgres } from '../database/postgres';
+import { publishToKafka, TOPICS } from '@/service/kafkaService';
 
 export async function LogIntegration(message: string, loglevel: 1 | 2 | 3, payload: string = ''): Promise<void> {
     try {
@@ -8,6 +9,11 @@ export async function LogIntegration(message: string, loglevel: 1 | 2 | 3, paylo
              VALUES ($1, $2, $3)`,
             [loglevel.toString(), payload, message]
         );
+
+        await publishToKafka(TOPICS.INTEGRATION_LOGS, {
+            message,
+            loglevel
+        });
     } catch (error) {
         console.error('Failed to log integration:', error);
     }

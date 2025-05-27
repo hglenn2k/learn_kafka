@@ -2,28 +2,86 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { bankApi } from "@/service/bankApiService";
 
 export default function Home() {
-    // Account form state
+    // account form state
     const [name, setName] = useState("");
     const [country, setCountry] = useState("");
     const [balance, setBalance] = useState("");
+    const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
-    // Transaction form state
+    // transaction form state
     const [fromAccountName, setFromAccountName] = useState("");
     const [toAccountName, setToAccountName] = useState("");
     const [amount, setAmount] = useState("");
+    const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
 
-    const handleAccountSubmit = () => {
-        console.log(`name: ${name}`);
-        console.log(`country: ${country}`);
-        console.log(`balance: ${balance}`);
+    // log state for displaying messages (populated by kafka)
+    const [logs/*, setLogs*/] = useState<string[]>([]);
+    const [fraudLogs/*, setFraudLogs*/] = useState<string[]>([]);
+
+    // helper functions to add log messages (will be called by kafka integration)
+    /*
+    const addLog = (message: string) => {
+        const timestamp = new Date().toLocaleTimeString();
+        setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+    };
+    const addFraudLog = (message: string) => {
+        const timestamp = new Date().toLocaleTimeString();
+        setFraudLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+    };
+    */
+
+    // TODO: Expose these functions to Kafka integration
+    // You can access them via useImperativeHandle, global window object, or context
+
+    const handleAccountSubmit = async () => {
+        if (!name.trim() || !country.trim()) {
+            return;
+        }
+
+        setIsCreatingAccount(true);
+
+        try {
+            await bankApi.createAccount({
+                name: name.trim(),
+                country: country.trim(),
+                balance: Number(balance) || 0
+            });
+
+            setName("");
+            setCountry("");
+            setBalance("");
+        } catch (error) {
+            console.error('Failed to create account:', error);
+        } finally {
+            setIsCreatingAccount(false);
+        }
     };
 
-    const handleTransactionSubmit = () => {
-        console.log(`fromAccountName: ${fromAccountName}`);
-        console.log(`toAccountName: ${toAccountName}`);
-        console.log(`amount: ${amount}`);
+    const handleTransactionSubmit = async () => {
+        if (!fromAccountName.trim() || !toAccountName.trim()) {
+            return;
+        }
+
+        setIsCreatingTransaction(true);
+
+        try {
+            await bankApi.createTransaction({
+                fromAccountName: fromAccountName.trim(),
+                toAccountName: toAccountName.trim(),
+                amount: Number(amount) || 0
+            });
+
+            setFromAccountName("");
+            setToAccountName("");
+            setAmount("");
+        } catch (error) {
+            console.error('Failed to transact:', error);
+        } finally {
+            setIsCreatingTransaction(false);
+        }
     };
 
     return (
@@ -55,6 +113,7 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                disabled={isCreatingAccount}
                             />
                         </div>
 
@@ -67,6 +126,7 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={country}
                                 onChange={(e) => setCountry(e.target.value)}
+                                disabled={isCreatingAccount}
                             />
                         </div>
 
@@ -79,16 +139,18 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={balance}
                                 onChange={(e) => setBalance(e.target.value)}
+                                disabled={isCreatingAccount}
                             />
                         </div>
 
                         <div className="flex justify-center mt-4">
                             <button
                                 type="submit"
-                                className="px-4 py-2 border rounded font-mono text-xs bg-blue-900 hover:bg-blue-700 text-white"
+                                className="px-4 py-2 border rounded font-mono text-xs bg-blue-900 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleAccountSubmit}
+                                disabled={isCreatingAccount}
                             >
-                                create account
+                                {isCreatingAccount ? "creating..." : "create account"}
                             </button>
                         </div>
                     </div>
@@ -98,7 +160,7 @@ export default function Home() {
                         <h2 className="text-lg font-semibold text-center">make transaction</h2>
 
                         <div>
-                            <label htmlFor="fromAccountName" className="block text-sm mb-1">fromaccountname</label>
+                            <label htmlFor="fromAccountName" className="block text-sm mb-1">from (account name)</label>
                             <input
                                 id="fromAccountName"
                                 type="text"
@@ -106,11 +168,12 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={fromAccountName}
                                 onChange={(e) => setFromAccountName(e.target.value)}
+                                disabled={isCreatingTransaction}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="toAccountName" className="block text-sm mb-1">toaccountname</label>
+                            <label htmlFor="toAccountName" className="block text-sm mb-1">to (account name)</label>
                             <input
                                 id="toAccountName"
                                 type="text"
@@ -118,6 +181,7 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={toAccountName}
                                 onChange={(e) => setToAccountName(e.target.value)}
+                                disabled={isCreatingTransaction}
                             />
                         </div>
 
@@ -130,16 +194,18 @@ export default function Home() {
                                 className="w-full p-2 border rounded font-mono text-sm bg-gray-50 dark:bg-gray-800"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
+                                disabled={isCreatingTransaction}
                             />
                         </div>
 
                         <div className="flex justify-center mt-4">
                             <button
                                 type="submit"
-                                className="px-4 py-2 border rounded font-mono text-xs bg-blue-900 hover:bg-blue-700 text-white"
+                                className="px-4 py-2 border rounded font-mono text-xs bg-blue-900 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleTransactionSubmit}
+                                disabled={isCreatingTransaction}
                             >
-                                submit transaction
+                                {isCreatingTransaction ? "processing..." : "submit transaction"}
                             </button>
                         </div>
                     </div>
@@ -157,17 +223,19 @@ export default function Home() {
                             id="logstream"
                             placeholder=""
                             readOnly
+                            value={logs.join('\n')}
                             className="w-full p-2 border rounded font-mono text-sm h-48 bg-gray-50 dark:bg-gray-800"
                         />
                     </div>
 
-                    {/* kafka log stream */}
+                    {/* fraud check log stream */}
                     <div className="w-full lg:w-1/2 flex flex-col">
-                        <h2 className="text-lg font-semibold text-center mb-1">kafka log stream</h2>
+                        <h2 className="text-lg font-semibold text-center mb-1">fraud check log stream</h2>
                         <textarea
-                            id="kafkalogstream"
+                            id="fraudlogstream"
                             placeholder=""
                             readOnly
+                            value={fraudLogs.join('\n')}
                             className="w-full p-2 border rounded font-mono text-sm h-48 bg-gray-50 dark:bg-gray-800"
                         />
                     </div>

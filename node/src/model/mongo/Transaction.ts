@@ -1,12 +1,14 @@
 import { Schema, model } from 'mongoose';
 
 const transactionSchema = new Schema({
-    TransactionId: { type: Number, required: true },
-    FromAccountId: { type: Number, required: true },
-    ToAccountId: { type: Number, required: true },
-    Amount: { type: Number, required: true },
-    FraudFlag: { type: Boolean, required: true },
-    FraudFlagReason: { type: String, required: true }
+    transactionId: { type: Number, required: true },
+    fromAccountId: { type: Number, required: true },
+    toAccountId: { type: Number, required: true },
+    amount: { type: Number, required: true },
+    fraudFlag: { type: Boolean, required: true },
+    fraudFlagReason: { type: String, required: true }
+}, {
+    collection: 'transactions'
 });
 
 export const Transaction = model('Transaction', transactionSchema);

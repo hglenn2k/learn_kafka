@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGO_URI = `mongodb://${process.env.MONGO_DOMAIN}:${process.env.MONGO_PORT}`;
+const MONGO_URI = `mongodb://${process.env.MONGO_DOMAIN}:${process.env.MONGO_PORT}/bank`;
 
 let connection: typeof mongoose.connection | null = null;
 

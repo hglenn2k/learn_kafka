@@ -1,10 +1,11 @@
 import { Schema, model } from 'mongoose';
 
 const bankAccountSchema = new Schema({
-    AccountId: { type: Number, required: true },
-    Name: { type: String, required: true },
-    Country: { type: String, required: true },
-    Balance: { type: Number, required: true },
+    name: { type: String, required: true },
+    country: { type: String, required: true },
+    balance: { type: Number, required: true },
+}, {
+    collection: 'accounts'
 });
 
 export const BankAccount = model('BankAccount', bankAccountSchema);

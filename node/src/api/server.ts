@@ -52,16 +52,15 @@ app.post('/transaction', async (req: Request, res: Response) => {
     try {
         await LogIntegration(`Begin POST /transaction`, 1, JSON.stringify(req.body));
 
-        const { transactionId, fromAccountId, toAccountId, amount, fraudFlag = false, fraudFlagReason = '' } = req.body;
-        if (!transactionId || !fromAccountId || !toAccountId || !amount) {
-            res.status(400).json({ error: 'transactionId, fromAccountId, toAccountId, and amount are required' });
+        const { fromAccountName, toAccountName, amount, fraudFlag = false, fraudFlagReason = '' } = req.body;
+        if (!fromAccountName || !toAccountName || !amount) {
+            res.status(400).json({ error: 'fromAccountName, toAccountName, and amount are required' });
             return;
         }
 
         const transaction = new Transaction({
-            transactionId,
-            fromAccountId,
-            toAccountId,
+            fromAccountName,
+            toAccountName,
             amount,
             fraudFlag,
             fraudFlagReason

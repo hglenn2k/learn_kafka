@@ -1,0 +1,62 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [ main, feature/cicd ]
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: forbright/kafka_demo
+  ECS_SERVICE: kafka-bank-demo-service
+  ECS_CLUSTER: kafka-bank-demo
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd docker
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update ECS service with new image
+        run: |
+          # Get the current task definition from your ECS service
+          TASK_DEF_ARN=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} --query 'services[0].taskDefinition' --output text)
+          
+          # Get the task definition details
+          TASK_DEF=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN --query 'taskDefinition')
+          
+          # Update the image in the task definition
+          NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "${{ steps.build-image.outputs.image }}" '
+            .containerDefinitions[0].image = $IMAGE | 
+            del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
+          ')
+          
+          # Register the new task definition
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF" --query 'taskDefinition.taskDefinitionArn' --output text)
+          
+          # Update the service to use the new task definition
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --task-definition $NEW_TASK_DEF_ARN

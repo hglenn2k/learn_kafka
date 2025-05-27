@@ -15,21 +15,36 @@ services:
   postgres:
     image: postgres:latest
     env_file: ".env"
+    ports:
+      - "5432:5432"
 
   # Mongo - account/user data
   mongo:
     image: mongo:latest
-    env_file: ".env"
+    ports:
+      - "27017:27017"
 
-  # Next.js - application
-  node:
+  # Express API - backend services
+  backend:
     build:
-      context: ../bank-app
-      dockerfile: Dockerfile
+      context: ../node
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      #- kafka - put back when kafka set up
+      - postgres
+      - mongo
+
+  # Next.js - frontend application
+  frontend:
+    build:
+      context: ../node
+      dockerfile: ../node/Dockerfile.frontend
+
     ports:
       - "3000:3000"
     env_file: .env
     depends_on:
-      - kafka
-      - postgres
-      - mongo
+      - backend
